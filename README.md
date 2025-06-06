@@ -16,4 +16,9 @@ The code uses `python 3.13`. To run it, do the following:
 
 4. Run the `weave.py` script (`python weave.py`).
 
+## Structure
+
+`roles/` contains the classes corresponding to the various roles (character, editor, narrator and worldsim);
+`system_prompts/` contains the system prompts for the various roles.
+
 [^1]: quite the mouthful...
