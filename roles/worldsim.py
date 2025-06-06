@@ -1,3 +1,4 @@
+from typing import Dict, Any
 from .base import BaseRole
 
 
@@ -8,9 +9,10 @@ class WorldSim(BaseRole):
 
     def __init__(
         self,
-        system_prompt: str = "You are a detailed world simulator. Describe environments and events realistically based on the current situation.",
+        llm: str = "microsoft/phi-3-mini-4k-instruct",
+        pipeline_kwargs: Dict[str, Any] = {},
     ):
-        super().__init__(role="worldsim", system_prompt=system_prompt)
+        super().__init__(role="worldsim", llm=llm, pipeline_kwargs=pipeline_kwargs)
 
     def simulate_world_event(self, current_situation_prompt: str) -> str:
         """

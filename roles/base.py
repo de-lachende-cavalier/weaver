@@ -1,7 +1,8 @@
 import logging
-from typing import List
+from typing import List, Dict, Any
 from datetime import datetime
 from pathlib import Path
+from transformers import pipeline, Pipeline
 
 
 class BaseRole:
@@ -11,49 +12,45 @@ class BaseRole:
 
     Attributes:
         role (str): The role of the role model (e.g., 'narrator', 'character').
+        llm_pipeline (Pipeline): A Hugging Face transformers pipeline for text generation.
         system_prompt (str): An initial prompt or context for the model.
         memory (List[str]): A list to store the history of prompts and generated texts.
         log_file_path (Path): Path to the automatically generated log file.
     """
 
-    def __init__(self, role: str, system_prompt: str = ""):
+    def __init__(self, role: str, llm: str, pipeline_kwargs: Dict[str, Any]):
         """
-        Initializes the RoleModel and creates a timestamped log file.
+        Initializes the BaseRole and creates a timestamped log file.
 
         Args:
             role: The role of the role model.
-            system_prompt: An initial system prompt or guiding context for the model.
+            llm: The name of the HuggingFace model for the text-generation pipeline.
+            pipeline_kwargs: Additional keyword arguments to pass to the pipeline constructor (e.g., device, max_length).
         """
         self.role: str = role
-        self.system_prompt: str = system_prompt
+        self.llm_pipeline: Pipeline = pipeline(
+            "text-generation", model=llm, **pipeline_kwargs
+        )
         self.memory: List[str] = []
+        self.system_prompt: str = Path(f"system_prompts/{role}.txt").read_text()
 
         # create logs directory if it doesn't exist
         log_dir = Path("logs")
         log_dir.mkdir(exist_ok=True)
 
-        # generate timestamped log file path
-        timestamp = datetime.now().strftime(
-            "%Y%m%d_%H%M%S_%f"
-        )  # added microseconds for more uniqueness
+        # generate timestamped log file path (microseconds for more uniqueness)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         self.log_file_path: Path = log_dir / f"{self.role}_{timestamp}.log"
 
-        if self.system_prompt:
-            entry = f"SYSTEM PROMPT: {self.system_prompt}"
-            self.memory.append(entry)
-            self._log_to_file(f"[INITIAL SETUP] {entry}")
-
         logging.info(
-            f"RoleModel initialized for role: '{self.role}'. Logging to: {self.log_file_path}"
+            f"BaseRole initialized for role: '{self.role}'. Logging to: {self.log_file_path}"
         )
 
     def _log_to_file(self, entry: str) -> None:
         """Appends a log entry to the automatically generated log file."""
         try:
             with open(self.log_file_path, "a", encoding="utf-8") as f:
-                timestamp = datetime.now().strftime(
-                    "%Y-%m-%d %H:%M:%S.%f"
-                )  # added microseconds
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
                 f.write(f"[{self.role} - {timestamp}] {entry}\n")
         except Exception as e:
             logging.error(
@@ -74,14 +71,10 @@ class BaseRole:
         """
         logging.info(f"Role '{self.role}' generating with prompt: '{prompt[:100]}...'")
 
-        full_prompt_for_llm = f"Role: {self.role}\n"
-        if self.system_prompt:
-            full_prompt_for_llm += f"System Context: {self.system_prompt}\n"
-        full_prompt_for_llm += f"User Prompt: {prompt}"
-
-        generated_text = (
-            f"[{self.role} based on '{prompt[:30]}...'] generated text placeholder."
-        )
+        full_prompt_for_llm = f"Role: {self.role}\nSystem Context: {self.system_prompt}\nUser Prompt: {prompt}"
+        result = self.llm_pipeline(full_prompt_for_llm)
+        generated_text = result[0]["generated_text"]
+        logging.info(f"Role '{self.role}' generated text: '{generated_text[:100]}...'")
 
         if save_to_memory:
             input_entry = f"Input Prompt: {prompt}"
@@ -114,8 +107,4 @@ class BaseRole:
         The system prompt, if set, will be re-added and re-logged.
         """
         self.memory = []
-        if self.system_prompt:
-            entry = f"SYSTEM PROMPT: {self.system_prompt}"
-            self.memory.append(entry)
-            self._log_to_file(f"[MEMORY CLEARED, RE-ADDED] {entry}")
         logging.info(f"Memory cleared for role '{self.role}'.")

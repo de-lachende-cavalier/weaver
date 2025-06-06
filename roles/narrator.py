@@ -1,3 +1,4 @@
+from typing import Dict, Any
 from .base import BaseRole
 
 
@@ -9,9 +10,10 @@ class Narrator(BaseRole):
 
     def __init__(
         self,
-        system_prompt: str = "You are a master storyteller. Weave events into a compelling narrative.",
+        llm: str = "microsoft/phi-3-mini-4k-instruct",
+        pipeline_kwargs: Dict[str, Any] = {},
     ):
-        super().__init__(role="narrator", system_prompt=system_prompt)
+        super().__init__(role="narrator", llm=llm, pipeline_kwargs=pipeline_kwargs)
 
     def edit_human_input(self, human_input: str) -> str:
         """

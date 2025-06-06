@@ -1,3 +1,4 @@
+from typing import Dict, Any
 from .base import BaseRole
 
 
@@ -8,9 +9,10 @@ class Character(BaseRole):
 
     def __init__(
         self,
-        system_prompt: str = "You are the protagonist. Decide your next action thoughtfully based on the situation.",
+        llm: str = "microsoft/phi-3-mini-4k-instruct",
+        pipeline_kwargs: Dict[str, Any] = {},
     ):
-        super().__init__(role="character", system_prompt=system_prompt)
+        super().__init__(role="character", llm=llm, pipeline_kwargs=pipeline_kwargs)
 
     def decide_character_action(self, current_situation_prompt: str) -> str:
         """

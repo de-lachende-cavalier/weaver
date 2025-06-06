@@ -1,5 +1,4 @@
-from typing import List, Dict
-
+from typing import List, Dict, Any
 from .base import BaseRole
 
 
@@ -10,9 +9,10 @@ class Editor(BaseRole):
 
     def __init__(
         self,
-        system_prompt: str = "You are a meticulous editor. Combine all provided logs and narratives into a single, polished, and coherent story.",
+        llm: str = "microsoft/phi-3-mini-4k-instruct",
+        pipeline_kwargs: Dict[str, Any] = {},
     ):
-        super().__init__(role="editor", system_prompt=system_prompt)
+        super().__init__(role="editor", llm=llm, pipeline_kwargs=pipeline_kwargs)
 
     def compile_story_from_logs(self, all_memories: Dict[str, List[str]]) -> str:
         """
