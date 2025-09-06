@@ -14,11 +14,10 @@ class Editor(BaseRole):
     ):
         super().__init__(role="editor", llm=llm, pipeline_kwargs=pipeline_kwargs)
 
-    def compile_story_from_logs(self, all_memories: Dict[str, List[str]]) -> str:
+    def compile_story(self, all_memories: Dict[str, List[str]]) -> str:
         """
         Compiles a cohesive story from the memory logs of various roles.
-        The generated story is NOT saved to this editor model's primary memory by default,
-        as it's a final product derived from other memories.
+        The generated story is NOT saved to this editor model's primary memory by default, as it's a final product derived from other memories.
         """
         story_material = "Combine the following perspectives and events into a cohesive narrative story:\n\n"
         for role_name, memory_log in all_memories.items():

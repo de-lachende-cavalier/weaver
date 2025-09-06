@@ -14,7 +14,7 @@ class Character(BaseRole):
     ):
         super().__init__(role="character", llm=llm, pipeline_kwargs=pipeline_kwargs)
 
-    def decide_character_action(self, current_situation_prompt: str) -> str:
+    def decide_action(self, current_situation_prompt: str) -> str:
         """
         Decides an action for the character based on the current situation.
         The generated output is saved to this model's memory.
