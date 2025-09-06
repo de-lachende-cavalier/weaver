@@ -2,7 +2,13 @@ import logging
 from typing import List, Dict, Any
 from datetime import datetime
 from pathlib import Path
-from transformers import pipeline, Pipeline
+
+from transformers.pipelines.base import Pipeline
+from transformers.pipelines import pipeline
+from transformers.utils import logging as tlogging
+
+# suppress warnings for cleaner output
+tlogging.set_verbosity_error()
 
 
 class BaseRole:
@@ -72,7 +78,7 @@ class BaseRole:
         logging.info(f"Role '{self.role}' generating with prompt: '{prompt[:100]}...'")
 
         full_prompt_for_llm = f"Role: {self.role}\nSystem Context: {self.system_prompt}\nUser Prompt: {prompt}"
-        result = self.llm_pipeline(full_prompt_for_llm)
+        result = self.llm_pipeline(full_prompt_for_llm, max_new_tokens=512)
         generated_text = result[0]["generated_text"]
         logging.info(f"Role '{self.role}' generated text: '{generated_text[:100]}...'")
 
