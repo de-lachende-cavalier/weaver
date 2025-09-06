@@ -46,7 +46,7 @@ class BaseRole:
 
         # generate timestamped log file path (microseconds for more uniqueness)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-        self.log_file_path: Path = log_dir / f"{self.role}_{timestamp}.log"
+        self.log_file_path: Path = log_dir / f"{timestamp}" / f"{self.role}.log"
 
         logging.info(
             f"BaseRole initialized for role: '{self.role}'. Logging to: {self.log_file_path}"
