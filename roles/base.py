@@ -1,3 +1,4 @@
+from typing import cast
 import logging
 from typing import List, Dict, Any
 from datetime import datetime
@@ -79,7 +80,8 @@ class BaseRole:
 
         full_prompt_for_llm = f"Role: {self.role}\nSystem Context: {self.system_prompt}\nUser Prompt: {prompt}"
         result = self.llm_pipeline(full_prompt_for_llm, max_new_tokens=512)
-        generated_text = result[0]["generated_text"]
+        generated_text = cast(str, result[0]["generated_text"])  # type: ignore
+
         logging.info(f"Role '{self.role}' generated text: '{generated_text[:100]}...'")
 
         if save_to_memory:
