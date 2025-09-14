@@ -174,3 +174,6 @@ spielraum.ipynb
 .cursorignore
 .zed/
 groq.key
+
+# remove the logs to save space in the repo
+logs/

@@ -12,13 +12,13 @@ class BaseRole:
 
     def __init__(self, role: str, llm: str, groq_kwargs: Dict[str, Any] = {}) -> None:
         """
-        Initializes the BaseRole and creates a timestamped log file.
+        Initializes the role and creates a timestamped log directory.
 
         Args:
             role: The role of the model.
             llm: The name of the Groq model to use for the text-generation pipeline.
         """
-        with open("groqkey.api", "r") as f:
+        with open("groq.key", "r") as f:
             api_key = f.read().strip()
         self.client = Groq(api_key=api_key)
         self.groq_kwargs = groq_kwargs
@@ -27,30 +27,31 @@ class BaseRole:
         self.role: str = role
         self.system_prompt: str = Path(f"system_prompts/{role}.txt").read_text()
 
+        # a simplified memory, i.e., a list of past prompts
         self.memory: List[str] = []
 
-        # create logs directory if it doesn't exist
-        log_dir = Path("logs")
-        log_dir.mkdir(exist_ok=True)
+        # logging
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # timestamp for uniqueness
+        log_dir = Path("logs") / timestamp
+        log_dir.mkdir(exist_ok=True, parents=True)
+        self.log_file_path = log_dir / f"{self.role}.log"
 
-        # generate timestamped log file path (microseconds for more uniqueness)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-        self.log_file_path: Path = log_dir / f"{timestamp}" / f"{self.role}.log"
+        # use the roles to disambiguate loggers
+        self.logger = logging.getLogger(self.role)
+        self.logger.setLevel(logging.INFO)
 
-        logging.info(
+        # avoid adding duplicate handlers for multiple instances
+        if not self.logger.hasHandlers():
+            handler = logging.FileHandler(self.log_file_path)
+            formatter = logging.Formatter(
+                "%(asctime)s - %(name)s - %(levelname)s: %(message)s"
+            )
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
+
+        self.logger.info(
             f"BaseRole initialized for role: '{self.role}'. Logging to: {self.log_file_path}"
         )
-
-    def _log_to_file(self, entry: str) -> None:
-        """Appends a log entry to the automatically generated log file."""
-        try:
-            with open(self.log_file_path, "a", encoding="utf-8") as f:
-                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
-                f.write(f"[{self.role} - {timestamp}] {entry}\n")
-        except Exception as e:
-            logging.error(
-                f"Role '{self.role}': Failed to write to log file {self.log_file_path}: {e}"
-            )
 
     def generate(
         self,
@@ -70,8 +71,8 @@ class BaseRole:
         Returns:
             The generated text.
         """
-        logging.info(
-            f"Role '{self.role}' - generating with prompt: '{user_prompt[:100]}...'"
+        self.logger.info(
+            f"Role '{self.role}' - generating with prompt: '{user_prompt}...'"
         )
 
         messages = []
@@ -90,9 +91,7 @@ class BaseRole:
         if generated_text is None:
             raise ValueError("Generated text is None")
 
-        logging.info(
-            f"Role '{self.role}' - generated text: '{generated_text[:100]}...'"
-        )
+        self.logger.info(f"Role '{self.role}' - generated text: '{generated_text}...'")
 
         if save_to_memory:
             # input_entry = f"Input Prompt: {user_prompt}"
@@ -101,10 +100,7 @@ class BaseRole:
             # self.memory.append(input_entry)
             self.memory.append(output_entry)
 
-            # self._log_to_file(input_entry)
-            self._log_to_file(output_entry)
-
-            logging.debug(
+            self.logger.debug(
                 f"Saved memory for role '{self.role}'. Memory size: {len(self.memory)} entries."
             )
 
@@ -125,4 +121,4 @@ class BaseRole:
         The system prompt, if set, will be re-added and re-logged.
         """
         self.memory = []
-        logging.info(f"Memory cleared for role '{self.role}'.")
+        self.logger.info(f"Memory cleared for role '{self.role}'.")
