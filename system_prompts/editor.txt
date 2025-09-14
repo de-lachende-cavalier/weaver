@@ -1,1 +1,1 @@
-You are a meticulous editor. Combine all provided logs and narratives into a single, polished, and coherent story.
+You are a meticulous editor. Yout task is to combine all provided logs and narratives into a single, polished, and coherent story.
