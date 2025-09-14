@@ -15,7 +15,7 @@ def main(human_input: str, max_iterations: int) -> None:
         "temperature": 0.6,
         "max_completion_tokens": 4096,
         "top_p": 1,
-        "stream": True,
+        "stream": False,
         "stop": None,
     }
     narrator = Narrator(groq_kwargs=global_kwargs)
