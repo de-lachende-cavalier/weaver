@@ -7,20 +7,21 @@ from roles import Narrator, WorldSim, Character, Editor
 from utils import write_story_to_file
 
 
-def main(human_input: str, max_iterations: int, device: str) -> None:
+def main(human_input: str, max_iterations: int) -> None:
     print("[+] Instantiating the roles...")
-    narrator = Narrator(
-        llm="distilgpt2", pipeline_kwargs={"device": device, "max_length": 512}
-    )
-    worldsim = WorldSim(
-        llm="distilgpt2", pipeline_kwargs={"device": device, "max_length": 512}
-    )
-    character = Character(
-        llm="distilgpt2", pipeline_kwargs={"device": device, "max_length": 512}
-    )
-    editor = Editor(
-        llm="distilgpt2", pipeline_kwargs={"device": device, "max_length": 512}
-    )
+    # use one set of kwargs for simplicity
+    # TODO use CLI to set these dynamically? or hydra after all?
+    global_kwargs = {
+        "temperature": 0.6,
+        "max_completion_tokens": 4096,
+        "top_p": 1,
+        "stream": True,
+        "stop": None,
+    }
+    narrator = Narrator(groq_kwargs=global_kwargs)
+    worldsim = WorldSim(groq_kwargs=global_kwargs)
+    character = Character(groq_kwargs=global_kwargs)
+    editor = Editor(groq_kwargs=global_kwargs)
 
     print("[+] Initialising the narrator...")
     prompt = narrator.edit_human_input(human_input)
@@ -59,15 +60,9 @@ if __name__ == "__main__":
         required=True,
         help="Maximum number of iterations to use for the story",
     )
-    args.add_argument(
-        "-d",
-        "--device",
-        type=str,
-        help="Device to use for the models",
-    )
 
     args = args.parse_args()
 
     human_input = input(">>> Insert initial prompt: ")
-    main(human_input, args.max_iterations, args.device)
+    main(human_input, args.max_iterations)
     print("[+] All done!")
