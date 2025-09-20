@@ -21,7 +21,9 @@ The code uses `python 3.13`, and relies on [groq](https://groq.com)[^2] for LLM 
 ## Structure
 
 `roles/` contains the classes corresponding to the various roles (character, editor, narrator and worldsim);
+
 `system_prompts/` contains the system prompts for the various roles.
+
 `logs/` contains the logs of the runs, it also represents the memory of the system.
 
 [^1]: quite the mouthful...
