@@ -36,7 +36,6 @@ def main(
         sim_out = worldsim.simulate_world_event(prompt)
         print("\t[+] Narrator - Editing simulation output...")
         prompt = narrator.edit_simulation_output(sim_out, prompt)
-        # TODO i currently allow for only one protagonist, what if i added multiple interacting characters?
         print("\t[+] Character - Deciding action...")
         action = character.decide_action(prompt)
         print("\t[+] Narrator - Narrating action...")
