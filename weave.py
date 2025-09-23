@@ -8,11 +8,14 @@ from utils import write_story_to_file
 
 def main(
     human_input: str,
+    max_iterations: int,
+    multichar: bool,
     llm: str,
     temperature: float,
     completion_tokens: int,
-    max_iterations: int,
 ) -> None:
+    # TODO should make the whole thing more configurable, hydra is probably the way...
+
     print("[+] Instantiating the roles...")
     # use one set of kwargs for simplicity
     global_kwargs = {
@@ -37,7 +40,7 @@ def main(
         print("\t[+] Narrator - Editing simulation output...")
         prompt = narrator.edit_simulation_output(sim_out, prompt)
         print("\t[+] Character - Deciding action...")
-        action = character.decide_action(prompt)
+        action = character.decide_action(prompt, multichar)
         print("\t[+] Narrator - Narrating action...")
         prompt = narrator.narrate_action(action, prompt)
 
@@ -50,6 +53,8 @@ def main(
     story = editor.compile_story(memory_dict)
 
     base_path = os.path.join("stories", llm)
+    if multichar:
+        base_path = os.path.join(base_path, "multichar")
     os.makedirs(base_path, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # for uniqueness
     story_fname = os.path.join(base_path, f"story_{timestamp}.txt")
@@ -66,6 +71,11 @@ if __name__ == "__main__":
         type=int,
         required=True,
         help="Maximum number of iterations to use for the story",
+    )
+    args.add_argument(
+        "--multichar",
+        action="store_true",
+        help="Enable multi-character mode",
     )
 
     # llm-specific arguments
@@ -96,10 +106,11 @@ if __name__ == "__main__":
     human_input = input(">>> Insert initial prompt: ")
     main(
         human_input,
+        args.max_iterations,
+        args.multichar,
         args.llm,
         args.temperature,
         args.completion_tokens,
-        args.max_iterations,
     )
 
     print("[+] All done!")
